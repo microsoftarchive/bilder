@@ -15,16 +15,17 @@ module.exports = (function() {
 
     // Utils
     var async = grunt.util.async;
+    // var _ = grunt.util._;
+
+    // populate options
+    var options = this.options(params.options || {});
 
     // populate files
-    var files = this.filesSrc;
+    var files = grunt.file.glob.sync(path.join(options.src, options.glob));
     if(!files || files.length === 0) {
       grunt.log.writeln('no files');
       return;
     }
-
-    // populate options
-    var options = this.options(params.options || {});
 
     // This task is async
     var done = this.async();
@@ -65,13 +66,15 @@ module.exports = (function() {
         // write out the file
         var module = util.format(params.template, name, generatedCode);
         fs.writeFile(destFilePath, module, function() {
+          var inFile = file.replace(options.src + '/',  '');
+          var outFile = name + '.js';
+          grunt.log.debug('\u2713', inFile, '\u2192', outFile);
           callback(null, {
             'file': file,
             'name': name
           });
         });
       });
-
     }, done);
   }
 

@@ -4,7 +4,6 @@ module.exports = function(grunt, options) {
 
   var stylus = require('stylus');
 
-  var taskName = 'compile/stylus';
   var suffixRegExp = /\.styl$/;
   var template = "define(function() { return {'name': '%s', 'styles': %s }; });";
 
@@ -28,14 +27,20 @@ module.exports = function(grunt, options) {
     });
   }
 
-  var BaseCompileTask = require('./base');
+  var BaseCompileTask = require('../lib/base-compiler');
   function StyleCompileTask() {
     BaseCompileTask.call(this, grunt, {
       'name': name,
       'template': template,
-      'compile': compile
+      'compile': compile,
+      'options': {
+        'src': 'public/styles',
+        'dest': 'build/styles',
+        'glob': '**/*.styl'
+      }
     });
   }
 
-  grunt.registerMultiTask(taskName, 'Compile stylus sheets as AMD modules', StyleCompileTask);
+  grunt.registerTask('compile/stylus', 'Compile stylus sheets as AMD modules', StyleCompileTask);
+  grunt.registerTask('compile/styles', ['compile/stylus']);
 };

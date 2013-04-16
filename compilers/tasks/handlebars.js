@@ -4,7 +4,6 @@ module.exports = function(grunt, options) {
 
   var handlebars = require('handlebars');
 
-  var taskName = 'compile/handlebars';
   var suffixRegExp = /\.tmpl$/;
   var template = "define(['vendor/handlebars'], function(H) {\nvar name = '%s';\nreturn H.template(%s);\n});";
 
@@ -27,14 +26,20 @@ module.exports = function(grunt, options) {
     }
   }
 
-  var BaseCompileTask = require('./base');
+  var BaseCompileTask = require('../lib/base-compiler');
   function HandlebarsCompileTask() {
     BaseCompileTask.call(this, grunt, {
       'name': name,
       'template': template,
-      'compile': compile
+      'compile': compile,
+      'options': {
+        'src': 'public/templates',
+        'dest': 'build/templates',
+        'glob': '**/*.tmpl'
+      }
     });
   }
 
-  grunt.registerMultiTask(taskName, 'Compile handlebars templates as AMD modules', HandlebarsCompileTask);
+  grunt.registerTask('compile/handlebars', 'Compile handlebars templates as AMD modules', HandlebarsCompileTask);
+  grunt.registerTask('compile/templates', ['compile/handlebars']);
 };

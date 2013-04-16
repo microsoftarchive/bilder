@@ -6,7 +6,6 @@ module.exports = function(grunt, options) {
   var path = require('path');
   var util = require('util');
 
-  var taskName = 'compile/languages';
   var suffixRegExp = /\/Localizable\.strings$/;
   var lineParsingRegExp = /^\s*\"([a-zA-Z0-9_\-\$]+)\"\s*=\s*\"(.*)\";\s*$/;
   var template = "define(function() {\nreturn {\n'name': '%s',\n'data': %s\n};\n});";
@@ -89,10 +88,13 @@ module.exports = function(grunt, options) {
 
     var destFilePath = path.join(options.destPath, 'available.js');
     var module = util.format(template, 'available', JSON.stringify(available));
-    fs.writeFile(destFilePath, module, done);
+    fs.writeFile(destFilePath, module, function() {
+      grunt.log.debug('\u2713', 'languages/available');
+      done();
+    });
   }
 
-  var BaseCompileTask = require('./base');
+  var BaseCompileTask = require('../lib/base-compiler');
   function LanguageCompileTask() {
     BaseCompileTask.call(this, grunt, {
       'name': name,
@@ -101,11 +103,12 @@ module.exports = function(grunt, options) {
       'options': {
         'src': 'public/languages/strings',
         'dest': 'build/languages',
+        'glob': '**/Localizable.strings',
         'labels': {},
         'languages': {}
       }
     }, compileAvailable);
   }
 
-  grunt.registerMultiTask(taskName, 'Compile localization data as AMD modules', LanguageCompileTask);
+  grunt.registerTask('compile/languages', 'Compile localization data as AMD modules', LanguageCompileTask);
 };
