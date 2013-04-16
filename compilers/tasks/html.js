@@ -10,7 +10,7 @@ module.exports = function(grunt) {
   var async = grunt.util.async;
 
   // Localization helper
-  var localizationHelper = require('../../lib/localizationHelper');
+  var localizationHelper = require('../lib/localizationHelper');
   handlebars.registerHelper('localized', localizationHelper);
 
   function precompilePartials (dir, callback) {

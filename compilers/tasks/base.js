@@ -24,7 +24,7 @@ module.exports = (function() {
     }
 
     // populate options
-    var options = this.options();
+    var options = this.options(params.options || {});
 
     // This task is async
     var done = this.async();

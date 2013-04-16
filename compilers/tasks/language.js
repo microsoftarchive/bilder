@@ -11,16 +11,13 @@ module.exports = function(grunt, options) {
   var lineParsingRegExp = /^\s*\"([a-zA-Z0-9_\-\$]+)\"\s*=\s*\"(.*)\";\s*$/;
   var template = "define(function() {\nreturn {\n'name': '%s',\n'data': %s\n};\n});";
 
-  var validlabels = require('../../data/labels');
-  var validLangs = require('../../data/languages');
-
   function name (file, options) {
     var prefixRegexp = new RegExp('^' + options.src + '/');
     var langCode = file.replace(prefixRegexp, '').replace(suffixRegExp, '');
-    if(validLangs[langCode].alias) {
-      langCode = validLangs[langCode].alias;
+    if(options.languages[langCode].alias) {
+      langCode = options.languages[langCode].alias;
     }
-    return validLangs[langCode].file;
+    return options.languages[langCode].file;
   }
 
   function compile (rawLanguageData, options, callback) {
@@ -32,7 +29,7 @@ module.exports = function(grunt, options) {
       if (sections && sections.length >= 2 && !sections[1].match(/\s/)) {
 
         var key = sections[1];
-        if (!(validlabels[key]) && !key.match(/^momentjs_/)) {
+        if (!(options.labels[key])) { // TODO: how to handle momentjs ?? && !key.match(/^momentjs_/)) {
           return;
         }
 
@@ -57,11 +54,11 @@ module.exports = function(grunt, options) {
     languages.forEach(function(lang) {
 
       var langCode = lang.file.replace(prefixRegexp, '').replace(suffixRegExp, '');
-      lang = validLangs[langCode];
+      lang = options.languages[langCode];
 
       // map aliases
       if(lang.alias) {
-        lang = validLangs[lang.alias];
+        lang = options.languages[lang.alias];
       }
 
       // Skip disabled languages
@@ -82,7 +79,7 @@ module.exports = function(grunt, options) {
 
     // Copy over all the enabled aliases
     var _ = grunt.util._;
-    _.each(validLangs, function(lang, code) {
+    _.each(options.languages, function(lang, code) {
       if(lang.alias && lang.alias in available) {
         available[code] = {
           'alias': lang.alias
@@ -100,9 +97,15 @@ module.exports = function(grunt, options) {
     BaseCompileTask.call(this, grunt, {
       'name': name,
       'template': template,
-      'compile': compile
+      'compile': compile,
+      'options': {
+        'src': 'public/languages/strings',
+        'dest': 'build/languages',
+        'labels': {},
+        'languages': {}
+      }
     }, compileAvailable);
   }
 
-  grunt.registerMultiTask('compile/language', 'Compile localization data as AMD modules', LanguageCompileTask);
+  grunt.registerMultiTask(taskName, 'Compile localization data as AMD modules', LanguageCompileTask);
 };
