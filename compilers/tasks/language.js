@@ -101,14 +101,14 @@ module.exports = function(grunt, options) {
     });
 
     // Copy over all the enabled aliases
-    // var _ = grunt.util._;
-    // _.each(enabledLanguages, function(lang, code) {
-    //   if(lang.alias && lang.alias in available) {
-    //     available[code] = {
-    //       'alias': lang.alias
-    //     };
-    //   }
-    // });
+    var aliases = {};
+    Object.keys(langMetaData).forEach(function (langCode) {
+      var metaData = langMetaData[langCode];
+      if(metaData.alias && metaData.alias in available) {
+        aliases[langCode] = metaData.alias;
+      }
+    });
+    available.aliases = aliases;
 
     var destFilePath = path.join(options.destPath, 'available.js');
     var module = util.format(template, 'available', JSON.stringify(available));

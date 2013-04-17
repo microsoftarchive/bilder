@@ -129,7 +129,7 @@ module.exports = function(grunt) {
         var address = httpServer.address();
         var host = address.host || '0.0.0.0';
         grunt.log.writeln('Started static server on http://' + host + ':' + address.port + '');
-        // done(); // Uncommenting this will break the standalone server without the `watch` task
+        done(); // Uncommenting this will break the standalone server without the `watch` task
       })
 
       // Die if the static server fails to start up
