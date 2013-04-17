@@ -6,17 +6,33 @@ module.exports = function(grunt, options) {
   var path = require('path');
   var util = require('util');
 
+  var langMetaData = require('../lib/languages');
+  var enabledLanguages = {};
+
   var suffixRegExp = /\/Localizable\.strings$/;
   var lineParsingRegExp = /^\s*\"([a-zA-Z0-9_\-\$]+)\"\s*=\s*\"(.*)\";\s*$/;
   var template = "define(function() {\nreturn {\n'name': '%s',\n'data': %s\n};\n});";
 
   function name (file, options) {
+
     var prefixRegexp = new RegExp('^' + options.src + '/');
     var langCode = file.replace(prefixRegexp, '').replace(suffixRegExp, '');
-    if(options.languages[langCode].alias) {
-      langCode = options.languages[langCode].alias;
+
+    // GetLocalization doesn't follow ISO codes, fix the names
+    langCode = langCode.replace(/\-/g, '_');
+
+    var metaData = langMetaData[langCode];
+    while (metaData && metaData.alias) {
+      langCode = metaData.alias;
+      metaData = langMetaData[langCode];
     }
-    return options.languages[langCode].file;
+
+    // if there is no metadata for this language, then drop out
+    if(!metaData) {
+      grunt.fatal('Language missing:' + langCode);
+    }
+
+    return metaData.file;
   }
 
   function compile (rawLanguageData, options, callback) {
@@ -53,38 +69,46 @@ module.exports = function(grunt, options) {
     languages.forEach(function(lang) {
 
       var langCode = lang.file.replace(prefixRegexp, '').replace(suffixRegExp, '');
-      lang = options.languages[langCode];
+
+      // GetLocalization doesn't follow ISO codes, fix the names
+      langCode = langCode.replace(/\-/g, '_');
 
       // map aliases
-      if(lang.alias) {
-        lang = options.languages[lang.alias];
+      var metaData = langMetaData[langCode];
+      while (metaData && metaData.alias) {
+        langCode = metaData.alias;
+        metaData = langMetaData[langCode];
+      }
+
+      if(!metaData) {
+        grunt.fatal('Language missing:' + langCode);
       }
 
       // Skip disabled languages
-      if(!lang.enabled) {
+      if(!enabledLanguages[langCode]) {
         return;
       }
 
       available[langCode] = {
-        "file": lang.file,
-        "name": lang.name
+        "file": metaData.file,
+        "name": metaData.name
       };
 
       // Add directiorn info for rtl languages
-      if(lang.dir) {
-        available[langCode].dir = lang.dir;
+      if(metaData.dir) {
+        available[langCode].dir = metaData.dir;
       }
     });
 
     // Copy over all the enabled aliases
-    var _ = grunt.util._;
-    _.each(options.languages, function(lang, code) {
-      if(lang.alias && lang.alias in available) {
-        available[code] = {
-          'alias': lang.alias
-        };
-      }
-    });
+    // var _ = grunt.util._;
+    // _.each(enabledLanguages, function(lang, code) {
+    //   if(lang.alias && lang.alias in available) {
+    //     available[code] = {
+    //       'alias': lang.alias
+    //     };
+    //   }
+    // });
 
     var destFilePath = path.join(options.destPath, 'available.js');
     var module = util.format(template, 'available', JSON.stringify(available));
@@ -96,6 +120,27 @@ module.exports = function(grunt, options) {
 
   var BaseCompileTask = require('../lib/base-compiler');
   function LanguageCompileTask() {
+
+    var options = this.options({
+      'languages': ['en']
+    });
+
+    // pre-populate the available-languages map
+    if(options.languages.length) {
+      options.languages.forEach(function (langCode) {
+
+        // GetLocalization doesn't follow ISO codes, fix the names
+        langCode = langCode.replace(/\-/g, '_');
+
+        var metaData = langMetaData[langCode];
+        while (metaData && metaData.alias && metaData.alias !== langCode) {
+          langCode = metaData.alias;
+          metaData = langMetaData[langCode];
+        }
+        enabledLanguages[langCode] = metaData;
+      });
+    }
+
     BaseCompileTask.call(this, grunt, {
       'name': name,
       'template': template,
@@ -105,7 +150,7 @@ module.exports = function(grunt, options) {
         'dest': 'build/languages',
         'glob': '**/Localizable.strings',
         'labels': {},
-        'languages': {}
+        'languages': ['en']
       }
     }, compileAvailable);
   }

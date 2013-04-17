@@ -21,7 +21,8 @@ module.exports = (function() {
     var options = this.options(params.options || {});
 
     // populate files
-    var files = grunt.file.glob.sync(path.join(options.src, options.glob));
+    var globRule = path.join(options.src, options.glob);
+    var files = grunt.file.glob.sync(globRule);
     if(!files || files.length === 0) {
       grunt.log.writeln('no files');
       return;
