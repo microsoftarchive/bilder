@@ -6,17 +6,15 @@ module.exports = function(grunt, options) {
   var path = require('path');
   var util = require('util');
 
-  var langMetaData = require('../lib/languages');
+  var langMetaData = require('../lib/languages-metadata');
   var enabledLanguages = {};
+  var enabledLabels = {};
 
   var suffixRegExp = /\/Localizable\.strings$/;
   var lineParsingRegExp = /^\s*\"([a-zA-Z0-9_\-\$]+)\"\s*=\s*\"(.*)\";\s*$/;
   var template = "define(function() {\nreturn {\n'name': '%s',\n'data': %s\n};\n});";
 
-  function name (file, options) {
-
-    var prefixRegexp = new RegExp('^' + options.src + '/');
-    var langCode = file.replace(prefixRegexp, '').replace(suffixRegExp, '');
+  function resolveLangCode (langCode) {
 
     // GetLocalization doesn't follow ISO codes, fix the names
     langCode = langCode.replace(/\-/g, '_');
@@ -32,7 +30,21 @@ module.exports = function(grunt, options) {
       grunt.fatal('Language missing:' + langCode);
     }
 
-    return metaData.file;
+    return {
+      'code': langCode,
+      'data': metaData
+    };
+  }
+
+  function fileToCode (file, options) {
+    var prefixRegexp = new RegExp('^' + options.src + '/');
+    return file.replace(prefixRegexp, '').replace(suffixRegExp, '');
+  }
+
+  function name (file, options) {
+    var langCode = fileToCode(file, options);
+    var resolved = resolveLangCode(langCode);
+    return resolved.data.file;
   }
 
   function compile (rawLanguageData, options, callback) {
@@ -44,7 +56,7 @@ module.exports = function(grunt, options) {
       if (sections && sections.length >= 2 && !sections[1].match(/\s/)) {
 
         var key = sections[1];
-        if (!(options.labels[key])) { // TODO: how to handle momentjs ?? && !key.match(/^momentjs_/)) {
+        if (!(enabledLabels[key])) { // TODO: how to handle momentjs ?? && !key.match(/^momentjs_/)) {
           return;
         }
 
@@ -62,27 +74,15 @@ module.exports = function(grunt, options) {
 
   function compileAvailable(err, languages, options, done) {
 
-    var prefixRegexp = new RegExp('^' + options.src + '/');
     var available = {};
 
     // Generate a map of available & enabled languages
     languages.forEach(function(lang) {
 
-      var langCode = lang.file.replace(prefixRegexp, '').replace(suffixRegExp, '');
-
-      // GetLocalization doesn't follow ISO codes, fix the names
-      langCode = langCode.replace(/\-/g, '_');
-
-      // map aliases
-      var metaData = langMetaData[langCode];
-      while (metaData && metaData.alias) {
-        langCode = metaData.alias;
-        metaData = langMetaData[langCode];
-      }
-
-      if(!metaData) {
-        grunt.fatal('Language missing:' + langCode);
-      }
+      var langCode = fileToCode(lang.file, options);
+      var resolved = resolveLangCode(langCode);
+      var metaData = resolved.data;
+      langCode = resolved.code;
 
       // Skip disabled languages
       if(!enabledLanguages[langCode]) {
@@ -128,16 +128,24 @@ module.exports = function(grunt, options) {
     // pre-populate the available-languages map
     if(options.languages.length) {
       options.languages.forEach(function (langCode) {
+        var resolved = resolveLangCode(langCode);
+        enabledLanguages[resolved.code] = resolved.data;
+      });
+    }
 
-        // GetLocalization doesn't follow ISO codes, fix the names
-        langCode = langCode.replace(/\-/g, '_');
+    // pre-populate the valid-labels map
+    if(options.labels) {
+      var labelsFilePath = path.resolve(options.labels);
 
-        var metaData = langMetaData[langCode];
-        while (metaData && metaData.alias && metaData.alias !== langCode) {
-          langCode = metaData.alias;
-          metaData = langMetaData[langCode];
-        }
-        enabledLanguages[langCode] = metaData;
+      var exists = fs.existsSync(labelsFilePath);
+      if(!exists) {
+        grunt.fatal('languages: ' + labelsFilePath + ' does not exists');
+      }
+
+      var labels = fs.readFileSync(labelsFilePath).toString();
+      labels = labels.split(/[\n\r\t\s]/g);
+      labels.forEach(function(label) {
+        enabledLabels[label] = true;
       });
     }
 
@@ -149,7 +157,6 @@ module.exports = function(grunt, options) {
         'src': 'public/languages/strings',
         'dest': 'build/languages',
         'glob': '**/Localizable.strings',
-        'labels': {},
         'languages': ['en']
       }
     }, compileAvailable);
