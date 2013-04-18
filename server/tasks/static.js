@@ -10,7 +10,7 @@ module.exports = function(grunt) {
   function precompileRegExps (map) {
     var keys = [];
     Object.keys(map).forEach(function (rule) {
-      var regexp = new RegExp('^\\/' + rule + '$');
+      var regexp = new RegExp('^\\/' + rule + '($|\\?)');
       map[regexp] = map[rule];
       delete map[rule];
       keys.push(regexp);
