@@ -20,6 +20,7 @@ module.exports = function (grunt) {
 
   // patch the context with some globals & stuff
   function patchMochaContext (mocha) {
+
     mocha.suite.on('pre-require', function(context) {
 
       // use a fresh new dom for every test

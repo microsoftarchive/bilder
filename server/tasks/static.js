@@ -73,7 +73,7 @@ module.exports = function(grunt) {
       var server = connect();
 
       // Favicon everything
-      server.use(connect.favicon(options.favicon));
+      server.use(connect.favicon(path.join(options.base, options.favicon)));
 
       // custom middleware for re-routing
       server.use(function (req, resp, next) {
@@ -109,7 +109,7 @@ module.exports = function(grunt) {
 
         // rewritten url
         if(replacement) {
-          req.url = path.join('/', replacement);
+          req.url = path.join('/', replacement).replace(/\/+/g, '/');
         }
         // everything else
         else {
