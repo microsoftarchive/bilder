@@ -1,4 +1,4 @@
-module.exports = function (items) {
+function roundup (items) {
 
   // Sort the items by their width
   items.sort(function (a, b) {
@@ -19,4 +19,6 @@ module.exports = function (items) {
 
   // Return the items
   return items;
-};
+}
+
+module.exports = roundup;
