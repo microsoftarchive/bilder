@@ -37,6 +37,10 @@ module.exports = function(grunt) {
     return stream.toString();
   }
 
+  function onBuildRead (name, path, contents ) {
+    return compress(contents);
+  }
+
   function RequireJSCompilerTask() {
 
     // Async task
@@ -49,11 +53,12 @@ module.exports = function(grunt) {
       'paths': {},
       'baseUrl': 'public',
       'useSourceUrl': true,
-      'onBuildRead': function (name, path, contents ) {
-        return compress(contents);
-      },
       'optimize': 'uglify2'
     });
+
+    if(options.useSourceUrl) {
+      options.onBuildRead = onBuildRead;
+    }
 
     // make paths absolute, to be able to include files outside the base directory
     var paths = options.paths = options.paths || {};
@@ -66,7 +71,7 @@ module.exports = function(grunt) {
 
     // Optimize
     requirejs.optimize(options, function() {
-      grunt.log.writeln('✔ '.green, target);
+      grunt.log.writeln('\u2714'.green, target);
       process.nextTick(done);
     });
   }
