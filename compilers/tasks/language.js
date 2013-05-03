@@ -50,7 +50,9 @@ module.exports = function(grunt, options) {
   function compile (rawLanguageData, options, callback) {
 
     var json = {};
-    rawLanguageData.split(/[\r\n]+/).forEach(function(line) {
+
+    var lines = rawLanguageData.split(/[\r\n]+/);
+    lines.forEach(function(line) {
 
       var sections = line.match(lineParsingRegExp);
       if (sections && sections.length >= 2 && !sections[1].match(/\s/)) {
@@ -122,6 +124,10 @@ module.exports = function(grunt, options) {
   function LanguageCompileTask() {
 
     var options = this.options({
+      'src': 'public/languages/strings',
+      'dest': 'build/languages',
+      'glob': '**/Localizable.strings',
+      'labels': 'data/labels.txt',
       'languages': ['en']
     });
 
@@ -153,12 +159,7 @@ module.exports = function(grunt, options) {
       'name': name,
       'template': template,
       'compile': compile,
-      'options': {
-        'src': 'public/languages/strings',
-        'dest': 'build/languages',
-        'glob': '**/Localizable.strings',
-        'languages': ['en']
-      }
+      'options': options
     }, compileAvailable);
   }
 
