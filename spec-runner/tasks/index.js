@@ -63,6 +63,9 @@ module.exports = function (grunt) {
 
         // Let specs use underscore
         ctx._ = _;
+
+        // Specs are in nodejs
+        ctx.isNode = true;
       }
 
       // fix the main suite context first
