@@ -10,9 +10,8 @@ module.exports = function (grunt) {
 
     // options
     var options = this.options({
-      'keepAlive': true,
+      'keepAlive': false,
       'head': '.git/HEAD',
-      'root': __dirname,
       'submodules': []
     });
 
@@ -53,7 +52,7 @@ module.exports = function (grunt) {
                   'cwd': path.join(options.root, submodule)
                 }, function(err) {
                   if(!err) {
-                    grunt.log.ok(submodule);
+                    grunt.log.ok('submodule switched -', submodule);
                   }
                 });
               }
