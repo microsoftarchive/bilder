@@ -34,8 +34,8 @@ module.exports = function(grunt, options) {
       'template': template,
       'compile': compile,
       'options': {
-        'src': 'public/styles',
-        'dest': 'build/styles',
+        'src': 'src/styles',
+        'dest': 'public/styles',
         'glob': '**/*.styl'
       }
     });

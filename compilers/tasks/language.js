@@ -124,8 +124,8 @@ module.exports = function(grunt, options) {
   function LanguageCompileTask() {
 
     var options = this.options({
-      'src': 'public/languages/strings',
-      'dest': 'build/languages',
+      'src': 'src/languages/strings',
+      'dest': 'public/languages',
       'glob': '**/Localizable.strings',
       'labels': 'data/labels.txt',
       'languages': ['en']

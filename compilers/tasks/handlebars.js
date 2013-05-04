@@ -33,8 +33,8 @@ module.exports = function(grunt, options) {
       'template': template,
       'compile': compile,
       'options': {
-        'src': 'public/templates',
-        'dest': 'build/templates',
+        'src': 'src/templates',
+        'dest': 'public/templates',
         'glob': '**/*.tmpl'
       }
     });

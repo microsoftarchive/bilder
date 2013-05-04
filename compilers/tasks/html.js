@@ -49,7 +49,11 @@ module.exports = function(grunt) {
 
   function HTMLCompileTask() {
 
-    var options = this.options({});
+    var options = this.options({
+      "partials": "src/templates/partials",
+      "src": "src/templates",
+      "dest": "public"
+    });
 
     // Async task
     var done = this.async();

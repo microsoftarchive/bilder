@@ -92,7 +92,7 @@ module.exports = function (grunt) {
       'destDir': 'public/images/sprites',
       'displayDir': 'images/sprites',
       'srcDir': 'src/sprites',
-      'stylusDir': 'public/styles/sprites'
+      'stylusDir': 'src/styles/sprites'
     });
 
     var glob = options.srcDir + '/' + target + '/**/*.png';
