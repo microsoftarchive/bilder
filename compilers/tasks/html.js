@@ -18,16 +18,24 @@ module.exports = function(grunt) {
     // TODO: use glob instead of fs.readdir
     fs.readdir(dir, function(err, files) {
 
+      if(err) {
+        grunt.fatal(err);
+      }
+
       files = files.filter(function (name) {
         return (/\.tmpl$/).test(name);
       });
 
       async.forEach(files, function (name, _callback) {
+
         var filePath = path.join(dir, name);
         name = name.replace(/\.tmpl$/, '');
+
         fs.readFile(filePath, function (err, data) {
+
           var partial = handlebars.compile(data.toString());
           handlebars.registerPartial(name, partial);
+
           _callback();
         });
       }, callback);
