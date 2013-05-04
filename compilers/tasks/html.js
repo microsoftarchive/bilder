@@ -55,6 +55,7 @@ module.exports = function(grunt) {
     });
   }
 
+  var scriptTemplate = handlebars.compile('<script type="application/javascript" data-main="{{entry}}" src="vendor/require.js"></script>');
   function HTMLCompileTask() {
 
     var options = this.options({
@@ -78,7 +79,9 @@ module.exports = function(grunt) {
 
     // TODO: do this in a better way
     if(options.entry) {
-      options.params.assets = new handlebars.SafeString('<script type="application/javascript" data-main="' + options.entry + '" src="vendor/require.js"></script>');
+      options.params.assets = new handlebars.SafeString(scriptTemplate({
+        'entry': options.entry
+      }));
     }
 
     precompilePartials(partialsPath, function() {
