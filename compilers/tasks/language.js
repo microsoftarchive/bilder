@@ -156,6 +156,7 @@ module.exports = function(grunt, options) {
     }
 
     BaseCompileTask.call(this, grunt, {
+      'type': 'language',
       'name': name,
       'template': template,
       'compile': compile,

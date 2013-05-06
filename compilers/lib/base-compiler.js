@@ -43,8 +43,25 @@ module.exports = (function() {
     options.srcPath = path.resolve(options.src);
     options.destPath = path.resolve(options.dest);
 
-    // compilation should be asynchronous
-    async.map(files, function(file, callback) {
+    // Listen for reload events from regarde
+    var type = params.type;
+    grunt.event.on('regarde:' + type + ':file', function (status, file) {
+
+      // Compile the source file
+      compileFile(file, function(err, data) {
+
+        // Error
+        if(err || !data.name) {
+          grunt.warn(file + ' compilation failed');
+          return;
+        }
+
+        // emit event
+        grunt.event.emit('compiled', type, data.name);
+      });
+    });
+
+    function compileFile (file, callback) {
 
       // extract the module name from the
       var name = params.name(file, options);
@@ -61,6 +78,8 @@ module.exports = (function() {
 
         // oopsie
         if (err) {
+          grunt.log.error(err);
+          grunt.warn(file + ' compilation failed');
           return callback(err);
         }
 
@@ -69,14 +88,19 @@ module.exports = (function() {
         fs.writeFile(destFilePath, module, function() {
           var inFile = file.replace(options.src + '/',  '');
           var outFile = name + '.js';
+
           grunt.log.debug('\u2713', inFile, '\u2192', outFile);
+
           callback(null, {
             'file': file,
             'name': name
           });
         });
       });
-    }, done);
+    }
+
+    // compilation should be asynchronous
+    async.map(files, compileFile, done);
   }
 
   return BaseCompileTask;

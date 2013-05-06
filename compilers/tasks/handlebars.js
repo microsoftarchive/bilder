@@ -29,6 +29,7 @@ module.exports = function(grunt, options) {
   var BaseCompileTask = require('../lib/base-compiler');
   function HandlebarsCompileTask() {
     BaseCompileTask.call(this, grunt, {
+      'type': 'handlebars',
       'name': name,
       'template': template,
       'compile': compile,

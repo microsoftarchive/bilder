@@ -13,10 +13,8 @@ module.exports = function(grunt, options) {
   }
 
   function compile (rawStylus, options, callback) {
-    stylus(rawStylus, {
-      'compress': true,
-      'paths': [options.srcPath]
-    }).render(function(err, css) {
+
+    function done(err, css) {
 
       // oopsie
       if (err) {
@@ -24,12 +22,22 @@ module.exports = function(grunt, options) {
       }
 
       callback(null, JSON.stringify(css.replace(/[\r\n\s]+/g, ' ')));
-    });
+    }
+
+    try {
+      stylus(rawStylus, {
+        'compress': true,
+        'paths': [options.srcPath]
+      }).render(done);
+    } catch (e){
+      callback(e);
+    }
   }
 
   var BaseCompileTask = require('../lib/base-compiler');
   function StyleCompileTask() {
     BaseCompileTask.call(this, grunt, {
+      'type': 'stylus',
       'name': name,
       'template': template,
       'compile': compile,

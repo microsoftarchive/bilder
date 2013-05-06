@@ -3,6 +3,8 @@ module.exports = function(grunt) {
   'use strict';
 
   var connect = require('connect');
+  var tinylr = require('tiny-lr');
+
   var http = require('http');
   var fs = require('fs');
   var path = require('path');
@@ -34,115 +36,134 @@ module.exports = function(grunt) {
     }
   }
 
-  grunt.registerTask(
+  function customMiddleware (options, rewrite_rules, rewrite_keys, template_rules, template_keys) {
 
-    // Name
-    'static',
+    return function (req, resp, next) {
 
-    // Description
-    'Connect based static server with regexp based rewrite support',
+      // Skip requests other than GET & HEAD
+      if ('GET' !== req.method && 'HEAD' !== req.method) {
+        return next();
+      }
 
-    // All the magic
-    function () {
+      // URL, to perform magic on
+      var url = req.url;
+      var result;
 
-      // Default options
-      var options = this.options({
-        'port': 5000,
-        'root': '.',
-        'base': 'public',
-        'favicon': 'images/favicon.ico',
-        'templates': {},
-        'rewrite': {}
+      // If the requested URL is a template, render it & return
+      result = findMatch(template_keys, url);
+      if(result && result.matches) {
+        var fn = template_rules[result.regexp];
+        if(typeof fn === 'function') {
+          resp.end(fn.call());
+          return;
+        }
+      }
+
+      // Loop through the rules to see if any match
+      var replacement;
+      result = findMatch(rewrite_keys, url);
+      if(result && result.matches) {
+        replacement = rewrite_rules[result.regexp];
+        result.matches.forEach(function (match, index) {
+          replacement = replacement.replace(new RegExp('\\$' + index, 'g'), match);
+        });
+      }
+
+      // No caching
+      resp.setHeader('Cache-Control', 'no-cache, no-store, max-age=0');
+
+      // rewritten url
+      if(replacement) {
+        req.url = path.join('/', replacement).replace(/\/+/g, '/');
+      }
+      // everything else
+      else {
+        req.url = path.join('/', options.base, url);
+      }
+
+      next();
+    };
+  }
+
+  function startLiveReload (port) {
+    var server = tinylr();
+    server.listen(port, function () {
+      grunt.event.on('compiled', function (type, name) {
+        var clients = Object.keys(server.clients);
+        clients.forEach(function(id) {
+          var client = server.clients[id];
+          client.reload([type + ':' + name]);
+        });
       });
+      grunt.log.ok('Livereload server started at port ', port);
+    });
+  }
 
-      // Connect requires the root path to be absolute.
-      options.root = path.resolve(options.root);
+  function ServerTask() {
 
-      // Precompile rewrite rules
-      var rewrite_rules = options.rewrite;
-      var rewrite_keys = precompileRegExps(rewrite_rules);
+    // Default options
+    var options = this.options({
+      'port': 5000,
+      'lrPort': 35729,
+      'root': '.',
+      'base': 'public',
+      'favicon': 'images/favicon.ico',
+      'templates': {},
+      'rewrite': {}
+    });
 
-      //  & template rules
-      var template_rules = options.templates;
-      var template_keys = precompileRegExps(template_rules);
+    // Connect requires the root path to be absolute.
+    options.root = path.resolve(options.root);
 
-      // It's an async task
-      var done = this.async();
+    // Precompile rewrite rules
+    var rewrite_rules = options.rewrite;
+    var rewrite_keys = precompileRegExps(rewrite_rules);
 
-      // Init the server
-      var server = connect();
+    //  & template rules
+    var template_rules = options.templates;
+    var template_keys = precompileRegExps(template_rules);
 
-      // Favicon everything
-      server.use(connect.favicon(path.join(options.base, options.favicon)));
+    // It's an async task
+    var done = this.async();
 
-      // custom middleware for re-routing
-      server.use(function (req, resp, next) {
+    // Init the server
+    var server = connect();
 
-        // Skip requests other than GET & HEAD
-        if ('GET' !== req.method && 'HEAD' !== req.method) {
-          return next();
-        }
+    // Favicon everything
+    server.use(connect.favicon(path.join(options.base, options.favicon)));
 
-        // URL, to perform magic on
-        var url = req.url;
-        var result;
+    // custom middleware for re-routing
+    server.use(customMiddleware (options, rewrite_rules, rewrite_keys, template_rules, template_keys));
 
-        // If the requested URL is a template, render it & return
-        result = findMatch(template_keys, url);
-        if(result && result.matches) {
-          var fn = template_rules[result.regexp];
-          if(typeof fn === 'function') {
-            resp.end(fn.call());
-            return;
-          }
-        }
+    // use connect's static middleware
+    connect['static'].mime.define(options.mime || {});
+    server.use(connect['static'](options.root));
 
-        // Loop through the rules to see if any match
-        var replacement;
-        result = findMatch(rewrite_keys, url);
-        if(result && result.matches) {
-          replacement = rewrite_rules[result.regexp];
-          result.matches.forEach(function (match, index) {
-            replacement = replacement.replace(new RegExp('\\$' + index, 'g'), match);
-          });
-        }
+    // Once server is started
+    var httpServer = http.createServer(server);
+    httpServer.on('listening', function() {
 
-        // rewritten url
-        if(replacement) {
-          req.url = path.join('/', replacement).replace(/\/+/g, '/');
-        }
-        // everything else
-        else {
-          req.url = path.join('/', options.base, url);
-        }
+      var address = httpServer.address();
+      var host = address.host || '0.0.0.0';
+      grunt.log.ok('Started static server on http://' + host + ':' + address.port + '');
 
-        next();
-      });
+      startLiveReload(options.lrPort);
 
-      // use connect's static middleware
-      connect['static'].mime.define(options.mime || {});
-      server.use(connect['static'](options.root));
+      done(); // Uncommenting this will break the standalone server without the `watch` task
+    })
 
-      // Once server is started
-      var httpServer = http.createServer(server);
-      httpServer.on('listening', function() {
-        var address = httpServer.address();
-        var host = address.host || '0.0.0.0';
-        grunt.log.writeln('Started static server on http://' + host + ':' + address.port + '');
-        done(); // Uncommenting this will break the standalone server without the `watch` task
-      })
+    // Die if the static server fails to start up
+    .on('error', function(err) {
+      if (err.code === 'EADDRINUSE') {
+        grunt.fatal('Port ' + options.port + ' is already in use by another process.');
+      } else {
+        grunt.fatal(err);
+      }
+    });
 
-      // Die if the static server fails to start up
-      .on('error', function(err) {
-        if (err.code === 'EADDRINUSE') {
-          grunt.fatal('Port ' + options.port + ' is already in use by another process.');
-        } else {
-          grunt.fatal(err);
-        }
-      });
+    // Start listening
+    httpServer.listen(options.port);
+  }
 
-      // Start listening
-      httpServer.listen(options.port);
-    }
-  );
+  grunt.registerTask('static', 'Connect based static server with regexp based rewrite support', ServerTask);
 };
