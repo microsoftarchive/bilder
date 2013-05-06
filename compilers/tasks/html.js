@@ -50,12 +50,11 @@ module.exports = function(grunt) {
         'removeComments': true,
         'collapseWhitespace': true,
         'removeAttributeQuotes': true
-      });
+      }).replace(/[\r\n\s]+/g, ' ');
       fs.writeFile(options.output, markup, callback);
     });
   }
 
-  var scriptTemplate = handlebars.compile('<script type="application/javascript" data-main="{{entry}}" src="vendor/require.js"></script>');
   function HTMLCompileTask() {
 
     var options = this.options({
@@ -77,13 +76,7 @@ module.exports = function(grunt) {
     // precompile all the partials
     var partialsPath = path.resolve(options.partials);
 
-    // TODO: do this in a better way
-    if(options.entry) {
-      options.params.assets = new handlebars.SafeString(scriptTemplate({
-        'entry': options.entry
-      }));
-    }
-
+    // Once the partials are ready, compile the template
     precompilePartials(partialsPath, function() {
       compileTemplate({
         'input': inputFilePath,
