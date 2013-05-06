@@ -10,6 +10,7 @@ module.exports = function (grunt) {
 
     // options
     var options = this.options({
+      'root': '',
       'keepAlive': false,
       'head': '.git/HEAD',
       'submodules': []
