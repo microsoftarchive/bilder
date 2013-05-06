@@ -50,14 +50,16 @@ module.exports = (function() {
       // Compile the source file
       compileFile(file, function(err, data) {
 
-        // Error
+        // error
         if(err || !data.name) {
           grunt.warn(file + ' compilation failed');
           return;
         }
 
-        // emit event
-        grunt.event.emit('compiled', type, data.name);
+        // emit event for live-reload plugin
+        process.nextTick(function () {
+          grunt.event.emit('compiled', type, data.name);
+        });
       });
     });
 

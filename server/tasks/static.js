@@ -86,14 +86,19 @@ module.exports = function(grunt) {
   }
 
   function startLiveReload (port) {
+
     var server = tinylr();
+    function fileReload (type, name) {
+      var clients = Object.keys(server.clients);
+      clients.forEach(function(id) {
+        var client = server.clients[id];
+        client.reload([type + ':' + name]);
+      });
+    }
+
     server.listen(port, function () {
-      grunt.event.on('compiled', function (type, name) {
-        var clients = Object.keys(server.clients);
-        clients.forEach(function(id) {
-          var client = server.clients[id];
-          client.reload([type + ':' + name]);
-        });
+      grunt.event.on('compiled', function(type, name) {
+        process.nextTick(fileReload.bind(null, type, name));
       });
       grunt.log.ok('Livereload server started at port ', port);
     });
