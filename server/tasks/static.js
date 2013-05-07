@@ -4,6 +4,7 @@ module.exports = function(grunt) {
 
   var connect = require('connect');
   var tinylr = require('tiny-lr');
+  var wsClient = require('tiny-lr/lib/client');
 
   var http = require('http');
   var fs = require('fs');
@@ -85,20 +86,35 @@ module.exports = function(grunt) {
     };
   }
 
+  var server = tinylr();
+  wsClient.prototype.custom = function(data) {
+
+    var self = this;
+    var clients = Object.keys(server.clients);
+    clients.forEach(function(id) {
+
+      // don't send the event back to the original sender
+      var client = server.clients[id];
+      if(self !== client) {
+        client.send(data);
+      }
+    });
+  };
+
   function startLiveReload (port) {
 
-    var server = tinylr();
-    function fileReload (type, name) {
-      var clients = Object.keys(server.clients);
-      clients.forEach(function(id) {
-        var client = server.clients[id];
-        client.reload([type + ':' + name]);
-      });
-    }
-
     server.listen(port, function () {
+
       grunt.event.on('compiled', function(type, name) {
-        process.nextTick(fileReload.bind(null, type, name));
+
+        var clients = Object.keys(server.clients);
+        clients.forEach(function(id) {
+          var client = server.clients[id];
+          client.send({
+            'command': 'reload',
+            'path': type + ':' + name
+          });
+        });
       });
       grunt.log.ok('Livereload server started at port ', port);
     });
