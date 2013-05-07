@@ -97,14 +97,15 @@ module.exports = function (grunt) {
 
     var glob = options.srcDir + '/' + target + '/**/*.png';
     var files = grunt.file.expand([glob]);
+    var destStylus = path.join(options.stylusDir, this.target + '.styl');
 
     if(!files.length) {
+      grunt.file.write(destStylus, '');
       grunt.log.warn('no files for', target);
       return done();
     }
 
     var destImage = path.join(options.destDir, this.target + '.png');
-    var destStylus = path.join(options.stylusDir, this.target + '.styl');
     var displayDir = options.displayDir;
     var filePath = displayDir ? path.join(displayDir, this.target + '.png') : destImage;
 
@@ -125,5 +126,4 @@ module.exports = function (grunt) {
   }
 
   grunt.registerMultiTask('compile/sprite', 'sprite builder and stylus exporter', SpriteTask);
-
 };
