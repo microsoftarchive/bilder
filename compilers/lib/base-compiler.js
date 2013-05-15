@@ -47,6 +47,11 @@ module.exports = (function() {
     var type = params.type;
     grunt.event.on('regarde:' + type + ':file', function (status, file) {
 
+      // don't try to compile deleted files
+      if(status === 'deleted') {
+        return;
+      }
+
       // Compile the source file
       compileFile(file, function(err, data) {
 
