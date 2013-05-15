@@ -164,13 +164,19 @@ module.exports = function(grunt) {
     var httpServer = http.createServer(server);
     httpServer.on('listening', function() {
 
+      var isStandAlone = (grunt.cli.tasks.length === 1 && grunt.cli.tasks[0] === 'static');
       var address = httpServer.address();
       var host = address.host || '0.0.0.0';
-      grunt.log.ok('Started static server on http://' + host + ':' + address.port + '');
+
+      grunt.log.write('Started static server on http://' + host + ':' + address.port + '');
+      grunt.log.writeln(isStandAlone ? ' in standalone mode' : '');
 
       startLiveReload(options.lrPort);
 
-      done(); // Uncommenting this will break the standalone server without the `watch` task
+      // Keepalive in standalone mode
+      if(!isStandAlone) {
+        done();
+      }
     })
 
     // Die if the static server fails to start up
