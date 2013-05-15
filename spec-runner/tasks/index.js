@@ -14,6 +14,8 @@ module.exports = function (grunt) {
   var _ = grunt.util._;
   var glob = grunt.file.glob;
 
+  var isTravis = (process.env.TRAVIS === 'true');
+
   // Dummies/Mocks for require.js to work
   function noop() { return {}; }
   function fakeLoader(a, b, load) { load(noop); }
@@ -66,6 +68,10 @@ module.exports = function (grunt) {
 
         // Specs are in nodejs
         ctx.isNode = true;
+
+        // Specs are on travis
+        ctx.isTravis = isTravis;
+
       }
 
       // fix the main suite context first
