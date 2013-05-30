@@ -3,6 +3,7 @@ module.exports = function(grunt, options) {
   'use strict';
 
   var stylus = require('stylus');
+  var stylusHelpers = require('../lib/stylus-helpers');
 
   var suffixRegExp = /\.styl$/;
   var template = "define(function() { return {'name': '%s', 'styles': %s }; });";
@@ -27,8 +28,11 @@ module.exports = function(grunt, options) {
     try {
       stylus(rawStylus, {
         'compress': true,
-        'paths': [options.srcPath]
-      }).render(done);
+        'paths': [options.srcPath],
+        'sassDebug': true
+      })
+      .use(stylusHelpers)
+      .render(done);
     } catch (e){
       callback(e);
     }
