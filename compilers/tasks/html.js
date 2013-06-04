@@ -27,15 +27,11 @@ module.exports = function(grunt) {
       });
 
       async.forEach(files, function (name, _callback) {
-
         var filePath = path.join(dir, name);
         name = name.replace(/\.tmpl$/, '');
-
         fs.readFile(filePath, function (err, data) {
-
           var partial = handlebars.compile(data.toString());
           handlebars.registerPartial(name, partial);
-
           _callback();
         });
       }, callback);
@@ -45,8 +41,10 @@ module.exports = function(grunt) {
   function compileTemplate (options, callback) {
     // Read the template file, compile it & render it
     fs.readFile(options.input, function (err, data) {
-      var template = handlebars.compile(data.toString());
-      var markup = minifier.minify(template(options.params || {}), {
+      var str = data.toString();
+      var template = handlebars.compile(str);
+      var markup = template(options.params || {});
+      markup = minifier.minify(markup, {
         'removeComments': true,
         'collapseWhitespace': true,
         'removeAttributeQuotes': true
