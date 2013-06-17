@@ -27,7 +27,8 @@ module.exports = function(grunt, options) {
 
     // if there is no metadata for this language, then drop out
     if(!metaData) {
-      grunt.fatal('Language missing:' + langCode);
+      grunt.warn('Language missing:' + langCode);
+      return;
     }
 
     return {
@@ -44,7 +45,7 @@ module.exports = function(grunt, options) {
   function name (file, options) {
     var langCode = fileToCode(file, options);
     var resolved = resolveLangCode(langCode);
-    return resolved.data.file;
+    return resolved && resolved.data.file;
   }
 
   function compile (rawLanguageData, options, callback) {
@@ -83,6 +84,11 @@ module.exports = function(grunt, options) {
 
       var langCode = fileToCode(lang.file, options);
       var resolved = resolveLangCode(langCode);
+
+      if(!resolved) {
+        return;
+      }
+
       var metaData = resolved.data;
       langCode = resolved.code;
 
