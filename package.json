@@ -28,7 +28,7 @@
     "filesize": "1.9.3",
     "gaze": "0.3.4",
     "grunt-regarde": "0.1.1",
-    "handlebars": "~1.0.12",
+    "handlebars": "1.0.10",
     "html-minifier": "0.5.0",
     "istanbul": "0.1.37",
     "jquery": "1.8.3",
