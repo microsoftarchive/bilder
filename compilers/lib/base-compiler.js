@@ -52,18 +52,20 @@ module.exports = (function() {
         return;
       }
 
-      // Compile the source file
-      compileFile(file, function(err, data) {
+      process.nextTick(function () {
+        // Compile the source file
+        compileFile(file, function(err, data) {
 
-        // error
-        if(err || !data.name) {
-          grunt.warn(file + ' compilation failed');
-          return;
-        }
+          // error
+          if(err || !data.name) {
+            grunt.warn(file + ' compilation failed');
+            return;
+          }
 
-        // emit event for live-reload plugin
-        process.nextTick(function () {
-          grunt.event.emit('compiled', type, data.name);
+          // emit event for live-reload plugin
+          process.nextTick(function () {
+            grunt.event.emit('compiled', type, data.name);
+          });
         });
       });
     });
