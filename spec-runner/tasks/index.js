@@ -205,12 +205,9 @@ module.exports = function (grunt) {
     var globRule = path.resolve(options.base, options.glob);
     mocha.files = glob.sync(globRule);
 
-    // if args contain a spec file name, just use that file alone
-    if(this.args.length && mocha.files.length) {
-      var specFile = this.args[0];
-      mocha.files = mocha.files.filter(function (file) {
-        return file.match(specFile);
-      });
+    // add support for grepping specs
+    if (this.args.length && mocha.files.length) {
+      mocha.grep(this.args[0]);
     }
 
     // Run it

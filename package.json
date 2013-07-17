@@ -1,6 +1,6 @@
 {
   "name": "bilder",
-  "version": "0.0.41",
+  "version": "0.0.42",
   "description": "Dev-Build-Deploy tool at 6W",
   "main": "index.js",
   "scripts": {
