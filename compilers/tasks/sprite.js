@@ -58,13 +58,17 @@ module.exports = function (grunt) {
       if(!options.skipStylus) {
 
         var stylus = [ '$' + target + '_file = "' + filePath + '"' ];
+        var names = [];
 
         _.each(result.coordinates, function (coords, file) {
 
           var lastIndex = file.lastIndexOf('/');
-          file = file.substr(lastIndex + 1).replace(/\.png/, '');
+          file = file.substr(lastIndex + 1).replace(/\.(png|jpeg)$/, '');
           stylus.push(coordsToStylus(target + '-' + file, coords));
+          names.push(file);
         });
+
+        stylus.push('$' + target + '_names = ' + names.join(' '));
 
         grunt.file.write(destStylus, stylus.join('\n'));
       }
