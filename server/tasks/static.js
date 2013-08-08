@@ -102,11 +102,8 @@ module.exports = function(grunt) {
   };
 
   function startLiveReload (port) {
-
     server.listen(port, function () {
-
-      grunt.event.on('compiled', function(type, name) {
-
+      grunt.event.on('asset:compiled', function(type, name) {
         var clients = Object.keys(server.clients);
         clients.forEach(function(id) {
           var client = server.clients[id];
