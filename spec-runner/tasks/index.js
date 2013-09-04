@@ -7,7 +7,7 @@ module.exports = function (grunt) {
   var path = require('path');
 
   var jsdom = require('jsdom');
-  var jquery = require('jquery');
+  var jqLoader = require('jquery-loader');
   var chai = require('chai');
   var sinon = require('sinon');
   var Mocha = require('mocha');
@@ -73,7 +73,7 @@ module.exports = function (grunt) {
         'appVersion': '1.0.0'
       };
 
-      var $ = jquery.create(win);
+      var $ = jqLoader.create(win, '1.10.1');
 
       // enhance chai's flavour
       chai.use(require('sinon-chai'));
