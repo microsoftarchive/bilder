@@ -1,6 +1,6 @@
 {
   "name": "bilder",
-  "version": "0.0.51",
+  "version": "0.0.60",
   "description": "Dev-Build-Deploy tool at 6W",
   "main": "index.js",
   "scripts": {
@@ -29,7 +29,7 @@
     "handlebars": "1.0.12",
     "html-minifier": "0.5.0",
     "istanbul": "0.1.37",
-    "jquery-loader": "~1.1.5",
+    "jquery-loader": "1.2.0",
     "jsdom": "0.6.5",
     "knox": "0.7.1",
     "mocha": "1.9.0",
