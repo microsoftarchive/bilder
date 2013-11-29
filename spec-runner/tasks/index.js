@@ -20,6 +20,18 @@ module.exports = function (grunt) {
 
   var isTravis = (process.env.TRAVIS === 'true');
 
+  // helper for pretty assertion failures inside of asynchronous calls
+  // http://stackoverflow.com/questions/11235815/is-there-a-way-to-get-chai-working-with-asynchronous-mocha-tests
+  var check = function (done, fn) {
+    try {
+      fn();
+      done();
+    }
+    catch (e) {
+      done(e);
+    }
+  };
+
   // Dummies/Mocks for require.js to work
   function noop() { return {}; }
   function fakeLoader(a, b, load) { load(noop); }
@@ -113,6 +125,9 @@ module.exports = function (grunt) {
 
         // Specs are on travis
         ctx.isTravis = isTravis;
+
+        // assertion helper
+        ctx.check = check;
       }
 
       // fix the main suite context first
@@ -134,7 +149,7 @@ module.exports = function (grunt) {
       'glob': '**/*.spec.js',
       'ui': 'bdd',
       'reporter': 'spec',
-      'globals': ['_', '$'],
+      'globals': ['_', '$', 'check'],
       'require': {
         'base': 'public'
       },
