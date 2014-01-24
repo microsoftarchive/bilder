@@ -230,10 +230,7 @@ module.exports = function (grunt) {
     // Run it
     mocha.run(function (count) {
 
-      // Stop fataly on any failed specs
-      if(count) {
-        grunt.fatal(count + ' failures.');
-      } else if (global.__coverage__) {
+      if (global.__coverage__) {
 
         // Process the coverage
         var collector = new istanbul.Collector();
@@ -247,7 +244,12 @@ module.exports = function (grunt) {
         });
       }
 
-      done();
+      // Stop fataly on any failed specs
+      if (count) {
+        grunt.fatal(count + ' failures.');
+      } else {
+        done();
+      }
     });
 
   });
