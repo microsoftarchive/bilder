@@ -152,7 +152,8 @@ module.exports = function (grunt) {
       'reporter': 'spec',
       'globals': ['_', '$', 'check'],
       'require': {
-        'base': 'public'
+        'base': 'public',
+        'paths': {}
       },
       'mocks': {},
       'fake_plugins': [],
@@ -184,12 +185,21 @@ module.exports = function (grunt) {
     mocha.ui(options.ui);
     mocha.reporter(options.reporter);
 
+    var paths = {};
+
     // Make mock paths absolute
     var mocks = options.mocks || {};
-    var paths = mocks.paths || {};
-    if(mocks.base && paths) {
-      Object.keys(paths).forEach(function(name) {
-        paths[name] = path.resolve(options.base, mocks.base, paths[name]);
+    if (mocks.base && mocks.paths) {
+      Object.keys(mocks.paths).forEach(function (name) {
+        paths[name] = path.resolve(options.base, mocks.base, mocks.paths[name]);
+      });
+    }
+
+    // fix requirejs paths
+    var rjs = options.require || {};
+    if (rjs.base && rjs.paths) {
+      Object.keys(rjs.paths).forEach(function (name) {
+        paths[name] = path.resolve(options.base, rjs.base, rjs.paths[name]);
       });
     }
 
