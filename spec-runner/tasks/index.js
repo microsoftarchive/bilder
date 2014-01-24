@@ -147,6 +147,7 @@ module.exports = function (grunt) {
     var options = this.options({
       'base': '',
       'glob': '**/*.spec.js',
+      'timeout': 1000,
       'ui': 'bdd',
       'reporter': 'spec',
       'globals': ['_', '$', 'check'],
@@ -178,7 +179,8 @@ module.exports = function (grunt) {
     // Allow certain globals in mocha
     mocha.globals(options.globals);
 
-    // Configure Mocha UI & Reporter
+    // Configure Timeout, Mocha UI & Reporter
+    mocha.timeout(options.timeout);
     mocha.ui(options.ui);
     mocha.reporter(options.reporter);
 
