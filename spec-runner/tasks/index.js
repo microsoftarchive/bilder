@@ -16,6 +16,9 @@ module.exports = function (grunt) {
   var requirejs = require('requirejs');
   var istanbul = require('istanbul');
 
+  var minimatch = require('minimatch');
+  var Minimatch = minimatch.Minimatch;
+
   var define = requirejs.define;
   var _ = grunt.util._;
   var glob = grunt.file.glob;
@@ -214,12 +217,12 @@ module.exports = function (grunt) {
     // Make paths absolute for files marked for coverage
     if(options.coverage.files) {
       var globRules = options.coverage.files;
-      var files = [];
+      var cFiles = [];
       globRules.forEach(function(rule) {
         rule = path.resolve(options.base, options.require.base, rule);
-        files.push.apply(files, glob.sync(rule));
+        cFiles.push.apply(cFiles, glob.sync(rule));
       });
-      options.coverage.files = files;
+      options.coverage.files = cFiles;
     }
 
     // Override requirejs.load for coverage generation
@@ -232,7 +235,25 @@ module.exports = function (grunt) {
 
     // populate files
     var globRule = path.resolve(options.base, options.glob);
-    mocha.files = glob.sync(globRule);
+    var files = glob.sync(globRule);
+
+    // ignore files
+    if (options.ignore) {
+      var ignore = options.ignore.slice(0);
+      var pattern, matcher;
+      var filter = function (filepath) {
+        return !matcher.match(filepath);
+      };
+      while (ignore.length) {
+        pattern = ignore.shift();
+        matcher = new Minimatch(pattern, {
+          'matchBase': true
+        });
+        files = files.filter(filter);
+      }
+    }
+
+    mocha.files = files;
 
     // add support for grepping specs
     if (this.args.length && mocha.files.length) {

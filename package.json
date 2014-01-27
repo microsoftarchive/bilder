@@ -37,6 +37,7 @@
     "sinon": "1.6.0",
     "sinon-chai": "2.4.0",
     "tiny-lr": "0.0.4",
-    "uglify-js": "2.2.5"
+    "uglify-js": "2.2.5",
+    "minimatch": "~0.2.14"
   }
 }
