@@ -8,6 +8,8 @@ module.exports = function (grunt) {
 
   var jsdom = require('jsdom');
   var jqLoader = require('jquery-loader');
+  var xhr = require('jquery-loader/node_modules/xmlhttprequest');
+
   var chai = require('chai');
   var sinon = require('sinon');
   var Mocha = require('mocha');
@@ -112,7 +114,7 @@ module.exports = function (grunt) {
 
         // manually load sinon's fake xhr module
         // TODO: is this really the best way to load it?
-        require('sinon/lib/sinon/util/fake_xml_http_request');
+        ctx.XMLHttpRequest = ctx.window.XMLHttpRequest = xhr.XMLHttpRequest;
 
         // make requirejs methods available
         ctx.define = define;
