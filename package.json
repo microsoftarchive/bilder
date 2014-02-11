@@ -32,12 +32,11 @@
     "jquery-loader": "1.2.0",
     "jsdom": "0.6.5",
     "knox": "0.7.1",
+    "minimatch": "~0.2.14",
     "mocha": "1.9.0",
-    "requirejs": "2.1.5",
+    "requirejs": "~2.1.10",
     "sinon": "1.6.0",
     "sinon-chai": "2.4.0",
-    "tiny-lr": "0.0.4",
-    "uglify-js": "2.2.5",
-    "minimatch": "~0.2.14"
+    "tiny-lr": "0.0.4"
   }
 }
