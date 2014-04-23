@@ -211,7 +211,8 @@ module.exports = function (grunt) {
     // find modules in the app folder
     requirejs.config({
       'baseUrl': path.resolve(options.base, options.require.base),
-      'paths': paths
+      'paths': paths,
+      'shim': options.require.shim || {}
     });
 
     // Make paths absolute for files marked for coverage
