@@ -111,6 +111,7 @@ module.exports = function (grunt) {
         // make chai functions available
         ctx.should = chai.should();
         ctx.expect = chai.expect;
+        ctx.assert = require('assert');
 
         // make sinon available
         ctx.sinon = sinon;
